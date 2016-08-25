@@ -44,7 +44,6 @@ The document begins with a header section between `---` lines that assigns value
 
     ---
     output: html_document
-    incremental: true
     ---
 
 ***
@@ -72,7 +71,7 @@ Code chunk options, such as `eval = TRUE` and `echo = FALSE` above, are specifie
 A value defined in one code chunk, i.e.
 
 ```{r eval = FALSE}
-    ...
+...
 ```
 
 is accessible in another:
@@ -85,7 +84,9 @@ is accessible in another:
 
 Create a code chunk that reads the "surveys.csv" table into a variable named "surveys", but is essentially invisible.
 
-    ...
+```{r eval = TRUE, echo = FALSE}
+surveys <- read.csv("data/surveys.csv")
+```
 
 ## Create your formatted document
 
@@ -110,9 +111,9 @@ db <- src_sqlite("data/portal.sqlite")
 
 ## Accessing tables
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 surveys <- tbl(db, 'surveys')
-...
+species <- tbl(db, 'species')
 ```
 
 ## Tidy databases
@@ -131,9 +132,9 @@ Combine information in two tables based on matching the values of variables they
 
 ```{r eval = FALSE}
 counts_1990_winter <- filter(surveys, year == 1990) %>%
-  ...
-  ...
-  ...
+  select(-year) %>%
+  group_by(species_id) %>%
+  summarize(count = n())
 
 inner_join(counts_1990_winter, species)
 ```
@@ -146,23 +147,45 @@ Untidy data is often needed for analysis, but it's not a good way to store data.
 library(ggplot2)
 surveys_1990_winter <- filter(surveys, year == 1990) %>%
   select(-year) %>%
-  ...
-  ...
-  ...
+  inner_join(species) %>%
+  filter(taxa == 'Rodent') %>%
+  collect()
 
-ggplot(data = ...,
+ggplot(data = surveys_1990_winter,
        aes(x = genus)) +
-  geom_boxplot(...)
+  geom_boxplot(aes(y = weight))
 ```
 
 ## Exercise
 
 Create a bar plot for the abundance of species in the rodent taxa.
 
-    ...
+```{r eval = TRUE, echo = TRUE}
+library(ggplot2)
+surveys_rodent <- inner_join(surveys, species) %>%
+  filter(taxa == 'Rodent') %>%
+  group_by(species) %>%
+  collect()
+
+ggplot(data = surveys_rodent,
+       aes(x = species)) +
+  geom_bar(fill = "purple")
+```
 
 ## Exercise
 
 The third table, plots, gives details on the plot type. Create a code chunk that shows box plots for the weight of rodents in 1990 across the types of plot.
 
-   ...
+```{r eval = TRUE, echo = FALSE}
+plots <- tbl(db, 'plots')
+surveys_1990 <- filter(surveys, year == 1990) %>%
+  select(-year) %>%
+  inner_join(species) %>%
+  filter(taxa == 'Rodent') %>%
+  inner_join(plots) %>%
+  collect()
+
+ggplot(data = surveys_1990,
+       aes(x = plot_type)) +
+  geom_boxplot(aes(y = weight), color = 'lime green')
+```
