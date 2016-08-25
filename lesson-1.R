@@ -1,14 +1,14 @@
 ## Scripting in the editor
 
-... <- c(...)
+vals <- c(5,6,12)
 
-... <- data.frame(...)
+data <- data.frame(counts=vals)
 
 ## Anatomy of a function
 
-function(...) {         # The arguments, or input, to the function goes here.  
-   ...                  # The body of the function goes here.
-   return(...)          # Any output of the function goes here.
+first <- function(df) {         # The arguments, or input, to the function goes here.  
+   result <- df[[1,1]]                  # The body of the function goes here.
+   return(result)          # Any output of the function goes here.
 }
 
 ## Change the url for the origin repo
